@@ -70,16 +70,14 @@
   z-index: 1;
   
 }
-
 .key.black {
   background-color: #000;
   color: #fff;
-  height: 80px;
+  height: 80px; /* Adjust as needed */
   width: 30px;
   position: absolute;
-  margin-left: -15px;
   z-index: 2;
-  top: 0;
+  margin-left: -15px;
 }
 
 /* Using the nth-of-type selector to position black keys after specific white keys */
@@ -91,3 +89,5 @@
 .key.active {
   background-color: #fdd835; /* Yellow for active key */
 }
+
+

@@ -1,10 +1,10 @@
-//app.js
-import './App.css';
 import React, { useState, useEffect } from 'react';
-import Keyboard from './keyboard'; // Import the Keyboard component
-
+import Keyboard from './keyboard'; // Ensure this path matches your file structure
+import Slider from './Slider'; // Ensure this is correctly imported
+import './App.css'; 
 // Define the base octave for calculation purposes
 const baseOctave = 4;
+
 
 // Note frequencies for the 4th octave (C4 to B4) as the base
 const scale = {
@@ -25,6 +25,12 @@ const scale = {
 function App() {
   const [audioContext, setAudioContext] = useState(null);
 
+  const [attack, setAttack] = useState(0.1); // Example initial value
+  const [decay, setDecay] = useState(0.1);
+  const [sustain, setSustain] = useState(0.5);
+  const [release, setRelease] = useState(0.5);
+  const [volume, setVolume] = useState(0.5); // Range 0 to 1
+  
   useEffect(() => {
     setAudioContext(new (window.AudioContext || window.webkitAudioContext)());
   }, []);
@@ -37,22 +43,40 @@ function App() {
     return oscillator;
   };
 
-  const playNote = (noteWithOctave, duration = 0.5, type = 'sine') => {
+  const playNote = (noteWithOctave, type = 'sine') => {
     const notePattern = /([A-G]#?)(\d+)/;
     const match = noteWithOctave.match(notePattern);
-    if (!match) {
-      console.error('Invalid note format:', noteWithOctave);
-      return;
-    }
+    if (!match) return;
+  
     const [, note, octave] = match;
     const freq = calculateFrequency(note, parseInt(octave, 10));
-    if (!freq) {
-      console.error('Note not found in scale:', noteWithOctave);
-      return;
-    }
-    const oscillator = createOscillator(freq, type);
+    if (!freq) return;
+  
+    const oscillator = audioContext.createOscillator();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+  
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+  
+    // Implement ADSR envelope
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + attack);
+    gainNode.gain.linearRampToValueAtTime(sustain * volume, audioContext.currentTime + attack + decay);
+    
     oscillator.start();
-    oscillator.stop(audioContext.currentTime + duration);
+  
+    // Release
+    setTimeout(() => {
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + release);
+      oscillator.stop(audioContext.currentTime + release); // Stop oscillator after release
+    }, (attack + decay) * 1000); // Convert seconds to milliseconds for setTimeout
+  };
+  
+  const releaseNote = (noteWithOctave) => {
+    // Implement releaseNote functionality here
+    console.log('Note released:', noteWithOctave);
   };
 
   const calculateFrequency = (note, octave) => {
@@ -62,12 +86,20 @@ function App() {
     return frequency * Math.pow(2, octave - baseOctave);
   };
 
+// In App component
 return (
   <div className="App">
     <header className="App-header">
-      <Keyboard playNote={playNote} scale={scale} />
+      {/* Make sure to import Slider correctly and define it as shown previously */}
+      <Slider label="attack" value={attack} onChange={(e) => setAttack(parseFloat(e.target.value))} min="0" max="1" step="0.01" />
+      <Slider label="decay" value={decay} onChange={(e) => setDecay(parseFloat(e.target.value))} min="0" max="1" step="0.01" />
+      <Slider label="sustain" value={sustain} onChange={(e) => setSustain(parseFloat(e.target.value))} min="0" max="1" step="0.01" />
+      <Slider label="release" value={release} onChange={(e) => setRelease(parseFloat(e.target.value))} min="0" max="1" step="0.01" />
+      <Slider label="volume" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} min="0" max="1" step="0.01" />
+      <Keyboard playNote={playNote} releaseNote={releaseNote} scale={scale} />
     </header>
   </div>
-);}
+);
+}
 
 export default App;

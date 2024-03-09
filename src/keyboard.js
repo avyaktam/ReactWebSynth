@@ -1,9 +1,10 @@
+//keyboard.js
 import React, { useState, useEffect } from 'react';
 
 function Keyboard({ playNote }) {
   const [currentOctave, setCurrentOctave] = useState(4);
   const [activeKeys, setActiveKeys] = useState({});
-
+  const [isMouseDown, setIsMouseDown] = useState(false);
   // Adjusted key mapping to reflect the musical scale correctly
   const keyToNote = {
     'a': 'C', 'w': 'C#', 's': 'D', 'e': 'D#', 'd': 'E',
@@ -63,12 +64,14 @@ function Keyboard({ playNote }) {
         const note = value + currentOctave;
         return (
           <div
-            key={key}
-            className={`key ${value.includes('#') ? 'black' : 'white'} ${isActive ? 'active' : ''}`}
-            onMouseDown={() => handleKeyPress(key, true)}
-            onMouseUp={() => handleKeyPress(key, false)}
-            onMouseLeave={() => handleKeyPress(key, false)}
-          >
+          key={key}
+          className={`key ${value.includes('#') ? 'black' : 'white'} ${isActive ? 'active' : ''}`}
+          onMouseDown={() => { handleKeyPress(key, true); setIsMouseDown(true); }}
+          onMouseUp={() => { handleKeyPress(key, false); setIsMouseDown(false); }}
+          onMouseEnter={() => isMouseDown && handleKeyPress(key, true)}
+          onMouseLeave={() => handleKeyPress(key, false)}
+          onTouchStart={() => handleKeyPress(key, true)} // Handle touch start
+        >
             {/* Note name */}
             <div className="note-name">
               {note}
