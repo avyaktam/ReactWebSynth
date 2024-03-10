@@ -1,0 +1,93 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.keyboard {
+  position: relative;
+  width: max-content;
+  margin: auto;
+  user-select: none;
+}
+
+.note-name {
+  position: absolute;
+  bottom: -40%; /* Adjust as needed to position slightly below the middle of bottom half */
+  width: 100%;
+  font-size: 0.5em; /* Smaller font size */
+  text-align: center;
+  user-select: none;
+}
+
+.key {
+  display: inline-block;
+  border: 1px solid #000;
+  margin: 0;
+  user-select: none;
+  height: 120px;
+  width: 40px;
+  text-align: center;
+  line-height: 120px;
+}
+
+.key.white {
+  background-color: #fff;
+  color: #000000;
+  position: relative;
+  z-index: 1;
+  
+}
+.key.black {
+  background-color: #000;
+  color: #fff;
+  height: 80px; /* Adjust as needed */
+  width: 30px;
+  position: absolute;
+  z-index: 2;
+  margin-left: -15px;
+}
+
+/* Using the nth-of-type selector to position black keys after specific white keys */
+.key.black:nth-of-type(1) { left: 0px; }
+.key.black:nth-of-type(4) { left: 41+41px; }t
+.key.black:nth-of-type(5) { left: 235px; }
+/* ... add similar rules for other black keys based on your layout */
+
+.key.active {
+  background-color: #fdd835; /* Yellow for active key */
+}
+
+
