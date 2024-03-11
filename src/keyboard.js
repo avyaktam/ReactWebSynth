@@ -66,7 +66,34 @@ function Keyboard() {
             window.removeEventListener('keyup', handleKeyUp);
         };
     }, [currentOctave, activeKeys, playNote, stopNote, calculateFrequency]);
+    const handleTouchStart = (event) => {
+      setIsMouseDown(true); // Consider touch as mouse down
+      handleTouch(event);
+  };
 
+  const handleTouchMove = (event) => {
+      handleTouch(event);
+  };
+
+  const handleTouchEnd = () => {
+      setIsMouseDown(false); // Reset on touch end
+      Object.keys(activeKeys).forEach(key => {
+          handleKeyPress(key, false); // Release all keys
+      });
+  };
+
+  const handleTouch = (event) => {
+      event.preventDefault(); // Prevent scrolling
+      const touches = event.changedTouches;
+      for (let i = 0; i < touches.length; i++) {
+          const touch = touches[i];
+          const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+          const key = targetElement && targetElement.getAttribute("data-key");
+          if (key && !activeKeys[key]) { // Prevent re-triggering the same key
+              handleKeyPress(key, true);
+          }
+      }
+  };
     return (
         <div className="keyboard">
             {Object.entries(keyToNote).map(([key, value]) => {

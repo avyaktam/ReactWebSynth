@@ -1,9 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling */
+  height: 100%; /* Full height */
+  width: 100%; /* Full width */
+}
+
+
 .App {
   display: flex;
   flex: auto;
   text-align: center;
   touch-action: none;
-  user-select: none;
 }
 
 .App-logo {
@@ -30,6 +38,7 @@
   box-sizing: border-box; /* Include padding in height calculation */
   font-size: calc(1rem + 1vmin); 
   color: rgb(255, 255, 255);
+  touch-action: none
 }
 
 .display-container {
@@ -38,6 +47,7 @@
   width: 100vh;
   height: 40vh;
   border: 1px solid #000;
+  touch-action: none
 }
 
 .adsr-controls {
@@ -47,6 +57,7 @@
   width: 50%;
   height: 100%;
   padding: 10px; /* To prevent sliders from sticking to the edge */
+  touch-action: none
 }
 .adsr-visualization {
   width: 100%;
@@ -54,6 +65,7 @@
   display: flex;
   justify-content: center;
   align-items:flex-end;
+  touch-action: none
 }
 
 
@@ -89,7 +101,7 @@
   font-size: 0.9em; /* Smaller font size */
   text-align: center;
   user-select: none;
-  
+  touch-action: none
 }
 
 .key {
@@ -110,6 +122,7 @@
   color: #000000;
   position: relative;
   z-index: 1;
+  touch-action: none
   
 }
 .key.black {
@@ -120,6 +133,7 @@
   position: absolute;
   z-index: 2;
   margin-left: -3vh;
+  touch-action: none
 }
 
 /* Using the nth-of-type selector to position black keys after specific white keys */
