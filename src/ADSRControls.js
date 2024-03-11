@@ -28,6 +28,7 @@ const ADSRControls = () => {
       gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);
       // Note: Handling of release would typically occur elsewhere, such as in a function to stop the note
     };
+    
 
 return (
   <div className="adsr-controls">
@@ -35,8 +36,8 @@ return (
       Attack:
       <input
         type="range"
-        min="0.01"
-        max="5"
+        min="0.00"
+        max="1"AGD
         step="0.01"
         value={adsr.attack}
         onChange={(e) => handleADSRChange('attack', e.target.value)}
@@ -49,7 +50,7 @@ return (
       <input
         type="range"
         min="0.01"
-        max="5"
+        max="1"
         step="0.01"
         value={adsr.decay}
         onChange={(e) => handleADSRChange('decay', e.target.value)}
@@ -60,8 +61,8 @@ return (
       Sustain:
       <input
         type="range"
-        min="0.01"
-        max="5"
+        min="0.00"
+        max="1"
         step="0.01"
         value={adsr.sustain}
         onChange={(e) => handleADSRChange('sustain', e.target.value)}
@@ -73,7 +74,7 @@ return (
       <input
         type="range"
         min="0"
-        max="5"
+        max="1"
         step="0.01"
         value={adsr.release}
         onChange={(e) => handleADSRChange('release', e.target.value)}

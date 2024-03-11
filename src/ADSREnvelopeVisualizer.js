@@ -10,10 +10,10 @@ const ADSREnvelopeVisualizer = ({ adsr }) => {
     const height = canvas.height;
 
     // Constants for maximum values of ADSR parameters for scaling purposes
-    const maxAttack = 5; // Adjust these max values based on your UI control ranges
-    const maxDecay = 5;
-    const maxRelease = 5;
-    const maxSustain = 5; // Sustain is a level (0-1), not a time
+    const maxAttack = 1; // Adjust these max values based on your UI control ranges
+    const maxDecay = 1;
+    const maxRelease = 1;
+    const maxSustain = 1; // Sustain is a level (0-1), not a time
 
     ctx.clearRect(0, 0, width, height); // Clear the canvas
 

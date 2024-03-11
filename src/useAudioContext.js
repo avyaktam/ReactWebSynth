@@ -1,4 +1,3 @@
-// useAudioContext.js
 import { useState, useEffect } from 'react';
 
 export const useAudioContext = () => {
@@ -6,16 +5,23 @@ export const useAudioContext = () => {
 
   useEffect(() => {
     // Create AudioContext once
-    let context = new (window.AudioContext || window.webkitAudioContext)();
+    const context = new (window.AudioContext || window.webkitAudioContext)();
     setAudioContext(context);
 
-    // Cleanup function to close the audio context
+    // Cleanup function to close the audio context when the component unmounts
     return () => {
-      if (context && context.state !== 'closed') {
+      if (context.state !== 'closed') {
         context.close();
       }
     };
   }, []);
 
-  return audioContext;
+  // Function to resume the AudioContext if needed
+  const resumeAudioContext = async () => {
+    if (audioContext && audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
+  };
+
+  return [audioContext, resumeAudioContext];
 };

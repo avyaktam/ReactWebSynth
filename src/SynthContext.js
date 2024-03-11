@@ -1,5 +1,6 @@
 //SynthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAudioContext } from './useAudioContext'; 
 
 const SynthContext = createContext();
 const baseOctave = 4;
@@ -26,53 +27,90 @@ export const SynthProvider = ({ children }) => {
       return frequency * Math.pow(2, octave - baseOctave);
   };
     const [waveform, setWaveform] = useState('sine');
-    const createAndPlayOscillator = (freq) => {
-        if (!audioContext) return; // Ensure the audio context is initialized
 
-        const oscillator = audioContext.createOscillator();
-        oscillator.type = waveform;
-        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+const createAndPlayOscillator = (freq) => {
+    if (!audioContext) return; // Ensure the audio context is initialized
 
-        const gainNode = audioContext.createGain();
-        const filterNode = audioContext.createBiquadFilter();
-        filterNode.type = 'lowpass';
-        filterNode.frequency.value = filterSettings.cutoff;
-        filterNode.Q.value = filterSettings.resonance;
+    const oscillator = audioContext.createOscillator();
+    oscillator.type = waveform;
+    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
 
-        // Apply ADSR envelope to gain node
-        const now = audioContext.currentTime;
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(volume, now + adsr.attack);
-        gainNode.gain.linearRampToValueAtTime(volume * adsr.sustain, now + adsr.attack + adsr.decay);
+    const gainNode = audioContext.createGain();
+    const filterNode = audioContext.createBiquadFilter();
+    filterNode.type = 'lowpass';
+    filterNode.frequency.value = filterSettings.cutoff;
+    filterNode.Q.value = filterSettings.resonance;
 
-        oscillator.connect(filterNode).connect(gainNode).connect(audioContext.destination);
-        oscillator.start();
+    // Apply ADSR envelope to gain node
+    const now = audioContext.currentTime;
+    const attackEndTime = now + adsr.attack;
+    const decayEndTime = attackEndTime + adsr.decay;
+    const sustainStartTime = decayEndTime;
+    const sustainValue = volume * adsr.sustain;
 
-        // Store oscillator info for management
-        const oscillatorInfo = { oscillator, gainNode, filterNode, playing: true };
-        setOscillators(prev => [...prev, oscillatorInfo]);
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(volume, attackEndTime);
+    gainNode.gain.linearRampToValueAtTime(sustainValue, decayEndTime);
+    gainNode.gain.setValueAtTime(sustainValue, sustainStartTime); // Ensure sustain level is maintained
 
-        return oscillatorInfo;
-    };
+    oscillator.connect(filterNode).connect(gainNode).connect(audioContext.destination);
+    oscillator.start();
 
-    const stopOscillator = (oscillatorInfo) => {
-        const { oscillator, gainNode } = oscillatorInfo;
-        const now = audioContext.currentTime;
-        gainNode.gain.cancelScheduledValues(now);
-        gainNode.gain.setValueAtTime(gainNode.gain.value, now); // Use current gain value
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + adsr.release);
-        oscillator.stop(now + adsr.release);
-        
-        oscillator.onended = () => {
-            setOscillators(prev => prev.filter(o => o !== oscillatorInfo));
-        };
-    };
+    // Store oscillator info for management
+    const oscillatorInfo = { oscillator, gainNode, filterNode, playing: true };
+    setOscillators(prev => [...prev, oscillatorInfo]);
 
-    useEffect(() => {
-        // This effect ensures that the ADSR and filter settings are applied to new oscillators.
-        // However, it's mostly beneficial for existing oscillators if their settings should be dynamically updated,
-        // which might not be straightforward for ADSR as it's applied at note start.
-    }, [adsr, filterSettings, volume]);
+    return oscillatorInfo;
+};
+  
+
+const stopOscillator = (oscillatorInfo) => {
+  const { oscillator, gainNode } = oscillatorInfo;
+  const now = audioContext.currentTime;
+
+  // Explicitly set the current gain to the sustain level to ensure a smooth transition to release
+  // This line seems to assume the gainNode's current value is at the sustain level, which should be correct if no external changes have been made.
+  gainNode.gain.cancelScheduledValues(now);
+  gainNode.gain.setValueAtTime(gainNode.gain.value, now); // Start from the current gain value
+
+  // Smoothly ramp the gain down to 0 over the release time
+  // This should initiate the release phase correctly. Ensure the release time is not too short to notice.
+  gainNode.gain.linearRampToValueAtTime(0, now + adsr.release);
+
+  // Schedule the oscillator to stop after the release phase to ensure no abrupt cuts
+  // Adding a slight buffer time (e.g., 0.1s) after the release ensures the oscillator stops smoothly without clipping.
+  oscillator.stop(now + adsr.release + 0.1);
+
+  // Once the oscillator has stopped, remove it from the active oscillators array to clean up resources
+  oscillator.onended = () => {
+    setOscillators((prevOscillators) => prevOscillators.filter((o) => o.oscillator !== oscillator));
+  };
+};
+
+
+useEffect(() => {
+  const testNote = () => {
+    const noteFreq = calculateFrequency('A', 4); // Example note A4
+    console.log("Playing note:", noteFreq);
+    const oscillatorInfo = createAndPlayOscillator(noteFreq);
+
+    // Log each phase to ensure correct timing
+    console.log("Attack phase:", adsr.attack, "seconds");
+    setTimeout(() => console.log("Decay to Sustain transition"), adsr.attack * 1000);
+    // Wait for attack + decay before logging sustain maintenance
+    setTimeout(() => console.log("Sustain phase, should maintain until stop"), (adsr.attack + adsr.decay) * 1000);
+
+    // Stop after 2 seconds, ensuring we're in sustain phase
+    setTimeout(() => {
+      console.log("Stopping note");
+      stopOscillator(oscillatorInfo);
+    }, 2000); // Adjust this duration based on ADSR to ensure we reach sustain
+  };
+
+  if (audioContext) testNote();
+}, [audioContext]); // Dependencies ensure this effect only runs once after the audio context is initialized
+
 
     return (
 <SynthContext.Provider value={{
