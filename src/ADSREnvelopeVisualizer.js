@@ -8,45 +8,44 @@ const ADSREnvelopeVisualizer = ({ adsr }) => {
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
-    
-    // Clear the canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Calculate the positions on the canvas
-    const attackEndX = adsr.attack * width;
-    const decayEndX = attackEndX + (adsr.decay * width);
-    const sustainEndX = decayEndX; // Sustain does not have a duration, it's a level
-    const releaseEndX = sustainEndX + (adsr.release * width); // Release phase width
 
-    // Calculate the height positions on the canvas
-    const peakLevelY = 0;
-    const sustainLevelY = (1 - adsr.sustain) * height;
-    const baseLevelY = height;
-    
-    // Draw the ADSR envelope
+    // Constants for maximum values of ADSR parameters for scaling purposes
+    const maxAttack = 5; // Adjust these max values based on your UI control ranges
+    const maxDecay = 5;
+    const maxRelease = 5;
+    const maxSustain = 5; // Sustain is a level (0-1), not a time
+
+    ctx.clearRect(0, 0, width, height); // Clear the canvas
+
+    // Normalize the ADSR parameters to the canvas size
+    const normalizedAttackWidth = (adsr.attack / maxAttack) * width * 0.25; // Assign 25% of width to Attack phase for visual emphasis
+    const normalizedDecayWidth = (adsr.decay / maxDecay) * width * 0.25; // Assign 25% of width to Decay phase for visual emphasis
+    // For Sustain, we're showing it as a level, not duration, but it visually occupies part of the canvas
+    const sustainHeight = height * (1 - adsr.sustain / maxSustain); // Inverting since canvas's 0 is at the top
+    const normalizedReleaseWidth = (adsr.release / maxRelease) * width * 0.5; // Assign 25% of width to Release phase for visual emphasis
+    const sustainWidth = width - (normalizedAttackWidth + normalizedDecayWidth + normalizedReleaseWidth); // Remaining width
+
+    // Drawing the ADSR envelope
     ctx.beginPath();
-    ctx.moveTo(0, baseLevelY); // Start at the bottom left
-    ctx.lineTo(attackEndX, peakLevelY); // Attack to peak
-    ctx.lineTo(decayEndX, sustainLevelY); // Decay to sustain level
-    ctx.fillStyle = '#000'; // Black background for the box
-    ctx.strokeStyle = '#FFF'; // White color for the ADSR line
-    ctx.lineWidth = 2; // Line width for the ADSR line
-    ctx.fillRect(0, 0, width, height); 
-    ctx.stroke(); 
-    // Sustain phase is horizontal, so no need for an additional line
+    ctx.moveTo(0, height); // Start from bottom left
+    ctx.lineTo(normalizedAttackWidth, 0); // Attack rises to the peak
+    const decayEndX = normalizedAttackWidth + normalizedDecayWidth;
+    ctx.lineTo(decayEndX, sustainHeight); // Decay drops to sustain level
+    const sustainEndX = decayEndX + sustainWidth;
+    ctx.lineTo(sustainEndX, sustainHeight); // Sustain holds the level
+    ctx.lineTo(width, height); // Release drops back to the bottom
 
-    if (releaseEndX <= width) {
-      // If releaseEndX is within the canvas, draw the release phase
-      ctx.lineTo(releaseEndX, baseLevelY); // Release to bottom
-    } else {
-      // If the release goes beyond the canvas, draw to the edge
-      ctx.lineTo(width, baseLevelY); // Release to right edge
-    }
-    
-    ctx.stroke(); // Stroke the path
+    // Styling the envelope
+    ctx.strokeStyle = 'rgb(0, 123, 255)'; // Choose a visible color for the stroke
+    ctx.lineWidth = 2; // Set line width
+    ctx.stroke(); // Apply stroke
+
+    // Optional: Fill under the envelope for a visual effect
+    ctx.fillStyle = 'rgba(0, 123, 255, 0.1)'; // Light fill color under the envelope
+    ctx.fill(); // Apply fill
   }, [adsr]); // Redraw when ADSR values change
 
-  return <canvas ref={canvasRef} width="200" height="100" />;
+  return <canvas ref={canvasRef} width="200" height="100"></canvas>;
 };
 
 export default ADSREnvelopeVisualizer;

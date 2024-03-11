@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ADSRControls from './ADSRControls';
 import FilterControls from './FilterControls';
+import WaveformSelector from './WaveformSelector';
 // Add imports for any other modules you have
 
 const moduleComponents = {
@@ -42,6 +43,7 @@ function Display() {
 
   return (
     <div className="display-container">
+      <WaveformSelector />
       <CurrentModule />
     </div>
   );

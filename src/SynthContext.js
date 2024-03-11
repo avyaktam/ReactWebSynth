@@ -25,11 +25,12 @@ export const SynthProvider = ({ children }) => {
       if (!frequency) return null;
       return frequency * Math.pow(2, octave - baseOctave);
   };
-    const createAndPlayOscillator = (freq, type = 'sine') => {
+    const [waveform, setWaveform] = useState('sine');
+    const createAndPlayOscillator = (freq) => {
         if (!audioContext) return; // Ensure the audio context is initialized
 
         const oscillator = audioContext.createOscillator();
-        oscillator.type = type;
+        oscillator.type = waveform;
         oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
 
         const gainNode = audioContext.createGain();
@@ -74,19 +75,23 @@ export const SynthProvider = ({ children }) => {
     }, [adsr, filterSettings, volume]);
 
     return (
-        <SynthContext.Provider value={{
-            audioContext,
-            playNote: createAndPlayOscillator,
-            stopNote: stopOscillator,
-            setADSR,
-            setVolume,
-            setFilterSettings,
-            adsr,
-            volume,
-            filterSettings,
-            calculateFrequency
-        }}>
-            {children}
-        </SynthContext.Provider>
+<SynthContext.Provider value={{
+  audioContext,
+  playNote: createAndPlayOscillator,
+  stopNote: stopOscillator,
+  setADSR,
+  setVolume,
+  setFilterSettings,
+  adsr,
+  volume,
+  filterSettings,
+  calculateFrequency,
+  waveform,
+  setWaveform,
+  oscillators, // Make sure oscillators is included here
+  setOscillators, // You may also want to provide a way to update oscillators
+}}>
+  {children}
+</SynthContext.Provider>
     );
 };

@@ -14,18 +14,20 @@ function Keyboard() {
       'k': 'C', 'o': 'C#', 'l': 'D', 'p': 'D#', 'ö': 'E', 'ä': 'F', 'å': 'F#'
   };
   
-  const handleKeyPress = (key, isDown) => {
+// Inside the Keyboard component
+
+
+const handleKeyPress = (key, isDown) => {
     const note = keyToNote[key];
     if (!note) return;
 
-    // Determine the correct octave for the note based on the key pressed
     const octaveAdjustment = ['k', 'o', 'l', 'p', 'ö', 'ä', 'å'].includes(key) ? 1 : 0;
     const effectiveOctave = currentOctave + octaveAdjustment;
 
     if (isDown) {
         const freq = calculateFrequency(note, effectiveOctave);
         if (freq) {
-            const oscillatorInfo = playNote(freq, 'sine');
+            const oscillatorInfo = playNote(freq); // No longer passing 'sine' or waveform type
             setActiveKeys(prev => ({ ...prev, [key]: oscillatorInfo }));
         }
     } else {
@@ -40,6 +42,7 @@ function Keyboard() {
         }
     }
 };
+
 
     useEffect(() => {
         const handleKeyDown = (event) => {
